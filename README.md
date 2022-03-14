@@ -7,6 +7,8 @@ This is simple spring web app. Use H2 in-memory databases.
 ## Features
 You can add and list your actions.
 
+See detail on http://localhost:8080/swagger-ui.html#/
+
 TBD:
 * actions history
 * actions statistic
