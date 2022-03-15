@@ -1,6 +1,8 @@
 package com.github.filechka.rpttracker.controller;
 
 import com.github.filechka.rpttracker.domain.Action;
+import com.github.filechka.rpttracker.domain.ActionHistory;
+import com.github.filechka.rpttracker.repository.ActionHistoryRepository;
 import com.github.filechka.rpttracker.repository.CommonRepository;
 import com.github.filechka.rpttracker.validation.ActionValidationError;
 import com.github.filechka.rpttracker.validation.ActionValidationErrorBuilder;
@@ -21,12 +23,13 @@ import java.net.URI;
 @RequestMapping("/api")
 public class ActionController {
     private CommonRepository<Action> repository;
+    private ActionHistoryRepository actionHistoryRepository;
 
     @Autowired
-    public ActionController(CommonRepository<Action> repository) {
+    public ActionController(CommonRepository<Action> repository, ActionHistoryRepository actionHistoryRepository) {
         this.repository = repository;
+        this.actionHistoryRepository = actionHistoryRepository;
     }
-
 
     /**
      * Get all actions
@@ -52,6 +55,17 @@ public class ActionController {
         return ResponseEntity.ok(result);
     }
 
+    /**
+     *  Get action history by id
+     * @param id
+     * @return
+     */
+    @ApiOperation(value = "Get action history data", notes = "Get action history data by action id")
+    @ApiImplicitParam(name = "id", value = "Action ID", required = true, dataType = "String", paramType = "path")
+    @GetMapping("/actions/{id}/history")
+    public ResponseEntity<Iterable<ActionHistory>> getActionHistoryByActionId(@PathVariable String id) {
+        return ResponseEntity.ok(actionHistoryRepository.findByActionId(id));
+    }
 
     /**
      *  Add action
@@ -67,20 +81,19 @@ public class ActionController {
         }
 
         Action result = repository.save(action);
-        URI loction = ServletUriComponentsBuilder.fromCurrentRequest()
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}").buildAndExpand(result.getId()).toUri();
-        return ResponseEntity.created(loction).body(result);
+        return ResponseEntity.created(location).body(result);
     }
-
-
+    
     /**
-     * Измените информацию о пользователе в соответствии с идентификатором
+     * Update action
      * @param action
      * @return
      */
     @ApiOperation (value = "Update action", notes = "Update action by id")
     @ApiImplicitParams({
-            @ApiImplicitParam (name = "action", value = "action entity", required = true, dataType = "User"),
+            @ApiImplicitParam (name = "action", value = "action entity", required = true, dataType = "Action"),
             @ApiImplicitParam (name = "id", value = "Action ID", required = true, dataType = "String", paramType = "path")
     })
     @PutMapping("/actions/{id}")
